@@ -20,5 +20,5 @@ VALUES  ('Michael', 'Scott', 1, NULL),
         ('Kelly', 'Kapoor', 2, 1),
         ('Ryan', 'Howard', 2, 3),
         ('Angela', 'Martin', 3, 1),
-        ('Kevin', 'Malone', 3, 4),
+        ('Kevin', 'Malone', 3, 5),
         ('Toby', 'Flenderson', 4, NULL);
