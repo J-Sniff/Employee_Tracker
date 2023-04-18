@@ -66,7 +66,7 @@ function menu() {
         case "View all roles":
           viewAllRoles();
           break;
-        case "Add role": // <---- Here
+        case "Add role": // 
           addRole();
           break;
         case "Remove role":
@@ -137,7 +137,6 @@ function viewEmployeesByManager() {
 // Add Employee //
 
 function addEmployee() {
-  // Retrieve roles from the database to be used in the prompt.
   const sql = "SELECT * FROM roles";
   connection.query(sql, async (err, results) => {
     if (err) throw err;
@@ -219,7 +218,6 @@ function removeEmployee() {
           (err, results) => {
             if (err) throw err;
             console.log("Employee removed successfully!");
-            // Display the main menu
             menu();
           }
         );
@@ -352,14 +350,11 @@ function addRole() {
 // Remove Role //
 
 function removeRole() {
-  // Query the database to get the list of roles
   connection.query("SELECT * FROM roles", (err, results) => {
     if (err) throw err;
 
     // Extract the role names from the results
     const roleNames = results.map((role) => role.title);
-
-    // Prompt the user to select a role to remove
     inquirer
       .prompt([
         {
@@ -377,7 +372,6 @@ function removeRole() {
           (err) => {
             if (err) throw err;
             console.log(`Successfully removed role: ${answer.role}`);
-            // Call the menu function to display the main menu after removing the role
             menu();
           }
         );
@@ -385,3 +379,74 @@ function removeRole() {
   });
 }
 
+// View All Departments //
+
+function viewAllDepartments() {
+  connection.query("SELECT * FROM departments", (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    menu();
+  });
+}
+
+// Add Department //
+
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "Enter the name of the new department:",
+        validate: function (value) {
+          if (value.length > 0) {
+            return true;
+          } else {
+            return "Please enter a department name.";
+          }
+        },
+      },
+    ])
+    .then((answer) => {
+      const departmentName = answer.name;
+      const query = "INSERT INTO departments (name) VALUES (?)";
+      connection.query(query, [departmentName], (err, res) => {
+        if (err) throw err;
+        console.log(`${departmentName} department added successfully!`);
+        menu();
+      });
+    });
+}
+
+// Remove Department //
+
+function removeDepartment() {
+  connection.query("SELECT name FROM departments", (err, results) => {
+    if (err) throw err;
+    // Extract department names from the results and store in an array
+    const choices = results.map((result) => result.name);
+
+    // Prompt user to select from the department list
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "departmentName",
+          message: "Which department do you want to remove?",
+          choices: choices,
+        },
+      ])
+      .then((answer) => {
+        // Delete the department from the database
+        connection.query(
+          "DELETE FROM departments WHERE name = ?",
+          [answer.departmentName],
+          (err, res) => {
+            if (err) throw err;
+            console.log(`${res.affectedRows} department deleted!\n`);
+            menu();
+          }
+        );
+      });
+  });
+}
