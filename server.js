@@ -66,7 +66,7 @@ function menu() {
         case "View all roles":
           viewAllRoles();
           break;
-        case "Add role":
+        case "Add role": // <---- Here
           addRole();
           break;
         case "Remove role":
@@ -90,6 +90,8 @@ function menu() {
 
 menu();
 
+// View All Employees //
+
 function viewAllEmployees() {
   connection.query("SELECT * FROM employees", function (err, res) {
     if (err) throw err;
@@ -97,6 +99,8 @@ function viewAllEmployees() {
     menu();
   });
 }
+
+// View Employees By Department //
 
 function viewEmployeesByDepartment() {
   connection.query(
@@ -112,6 +116,8 @@ function viewEmployeesByDepartment() {
     }
   );
 }
+
+// View Employees By Manager //
 
 function viewEmployeesByManager() {
   connection.query(
@@ -191,7 +197,7 @@ function removeEmployee() {
   // Get a list of all employees from the database
   connection.query("SELECT * FROM employees", (err, results) => {
     if (err) throw err;
-    
+
     // Prompt the user to select an employee to remove
     inquirer
       .prompt([
@@ -264,9 +270,7 @@ function getRoleChoices() {
   return new Promise((resolve, reject) => {
     connection.query("SELECT * FROM roles", (err, results) => {
       if (err) reject(err);
-      resolve(
-        results.map((role) => ({ name: role.title, value: role.id }))
-      );
+      resolve(results.map((role) => ({ name: role.title, value: role.id })));
     });
   });
 }
@@ -279,7 +283,8 @@ function updateEmployeeManager() {
       {
         type: "input",
         name: "employeeId",
-        message: "Enter the ID of the employee you want to update the manager for:",
+        message:
+          "Enter the ID of the employee you want to update the manager for:",
       },
       {
         type: "input",
@@ -310,3 +315,73 @@ function viewAllRoles() {
     menu();
   });
 }
+
+// Add Role //
+
+function addRole() {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message: 'What is the title of the new role?'
+    },
+    {
+      type: 'input',
+      name: 'salary',
+      message: 'What is the salary for the new role?'
+    },
+    {
+      type: 'input',
+      name: 'department',
+      message: 'What is the department ID for the new role?'
+    }
+  ]).then((answers) => {
+    connection.query(
+      'INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)',
+      [answers.title, answers.salary, answers.department],
+      (err, res) => {
+        if (err) throw err;
+        console.log(`${answers.title} role has been added.`);
+        menu();
+      }
+    );
+  });
+}
+
+
+// Remove Role //
+
+function removeRole() {
+  // Query the database to get the list of roles
+  connection.query("SELECT * FROM roles", (err, results) => {
+    if (err) throw err;
+
+    // Extract the role names from the results
+    const roleNames = results.map((role) => role.title);
+
+    // Prompt the user to select a role to remove
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "role",
+          message: "Select a role to remove:",
+          choices: roleNames,
+        },
+      ])
+      .then((answer) => {
+        // Execute a DELETE query to remove the selected role from the database
+        connection.query(
+          "DELETE FROM roles WHERE ?",
+          { title: answer.role },
+          (err) => {
+            if (err) throw err;
+            console.log(`Successfully removed role: ${answer.role}`);
+            // Call the menu function to display the main menu after removing the role
+            menu();
+          }
+        );
+      });
+  });
+}
+
