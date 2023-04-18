@@ -184,3 +184,129 @@ function addEmployee() {
     });
   });
 }
+
+// Remove Employee //
+
+function removeEmployee() {
+  // Get a list of all employees from the database
+  connection.query("SELECT * FROM employees", (err, results) => {
+    if (err) throw err;
+    
+    // Prompt the user to select an employee to remove
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "employeeId",
+          message: "Which employee would you like to remove?",
+          choices: results.map((employee) => ({
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id,
+          })),
+        },
+      ])
+      .then((answer) => {
+        // Execute the DELETE query to remove the selected employee
+        connection.query(
+          "DELETE FROM employees WHERE id = ?",
+          [answer.employeeId],
+          (err, results) => {
+            if (err) throw err;
+            console.log("Employee removed successfully!");
+            // Display the main menu
+            menu();
+          }
+        );
+      });
+  });
+}
+
+// Update Employee Role //
+
+function updateEmployeeRole() {
+  connection.query("SELECT * FROM employees", (err, results) => {
+    if (err) throw err;
+
+    inquirer
+      .prompt([
+        {
+          name: "employeeId",
+          type: "list",
+          message: "Select the employee you want to update:",
+          choices: () =>
+            results.map((employee) => ({
+              name: `${employee.first_name} ${employee.last_name}`,
+              value: employee.id,
+            })),
+        },
+        {
+          name: "roleId",
+          type: "list",
+          message: "Select the new role for the employee:",
+          choices: getRoleChoices,
+        },
+      ])
+      .then((answer) => {
+        connection.query(
+          "UPDATE employees SET role_id = ? WHERE id = ?",
+          [answer.roleId, answer.employeeId],
+          (err, result) => {
+            if (err) throw err;
+            console.log("Employee role updated successfully!");
+            menu();
+          }
+        );
+      });
+  });
+}
+
+function getRoleChoices() {
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT * FROM roles", (err, results) => {
+      if (err) reject(err);
+      resolve(
+        results.map((role) => ({ name: role.title, value: role.id }))
+      );
+    });
+  });
+}
+
+// Update Employee Manager //
+
+function updateEmployeeManager() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "employeeId",
+        message: "Enter the ID of the employee you want to update the manager for:",
+      },
+      {
+        type: "input",
+        name: "managerId",
+        message: "Enter the ID of the new manager for the employee:",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "UPDATE employees SET manager_id = ? WHERE id = ?",
+        [answer.managerId, answer.employeeId],
+        (err, res) => {
+          if (err) throw err;
+          console.log("Employee manager updated successfully");
+          menu();
+        }
+      );
+    });
+}
+
+// View All Roles //
+
+function viewAllRoles() {
+  connection.query("SELECT * FROM roles", (err, res) => {
+    if (err) throw err;
+    console.log("All roles:");
+    console.table(res);
+    menu();
+  });
+}
