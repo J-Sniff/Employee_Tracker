@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "qx3e47zU!",
+  password: "", 
   database: "employee_db",
 });
 
@@ -15,7 +15,7 @@ connection.connect((err) => {
   console.log("Connected to employee_db");
 });
 
-function menu() {
+function menu() { 
   inquirer
     .prompt([
       {
@@ -28,8 +28,8 @@ function menu() {
           "View all employees by manager",
           "Update employee role",
           "Update employee manager",
-          "Add employee",
-          "Remove employee",
+          "Add employee",                                    //Thanks!
+          "Remove employee",    
           "View all roles",
           "Add role",
           "Remove role",
